@@ -4,4 +4,4 @@
 node convertMdToWiki.js needConvertMarkdownFilePath.js [encode:default-utf-8]
 ```
 ####增加功能
-在convertRule中增加规则
+在convertRule中增加规则，也可以贡献更改实现方式。
