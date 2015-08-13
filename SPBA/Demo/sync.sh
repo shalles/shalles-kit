@@ -1,0 +1,1 @@
+rsync -rzcv --rsh=ssh src/export /Users/shalles/Workspace/Demo/Map/src/remote
