@@ -50,3 +50,35 @@ var DEBUG = true,
         }
     };
 ```
+
+Sublime用户可以创建snippet
+
+**操作：**
+
+1. 通过Browser Packages进入sublime的包目录再进到User目录下
+2. 将SPBA.sublime-snippet文件放到该目录下
+3. 回到Sublime 在你的gulpfile.js中按下快捷键(command/ctrl + shift + P)然后输入snippet:SPBA 回车，该功能代码添加到你的文件里面
+4. 配置你需要的功能和目录结构
+5. 开始你的编码
+
+**别忘了添加gulp依赖**
+
+```js
+"dependencies": {
+    "del": "^1.2.0",
+    "gulp": "^3.9.0",
+    "gulp-compass": "^2.1.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-imagemin": "^2.3.0",
+    "gulp-livereload": "^3.8.0",
+    "gulp-minify-css": "^1.2.0",
+    "gulp-replace": "^0.5.4",
+    "gulp-rsync": "^0.0.5",
+    "gulp-sourcemaps": "^1.5.2",
+    "rsync": "^0.4.0",
+    "gulp-minify": "^0.0.5",
+    "gulp-uglify": "^1.2.0",
+    "gulp-coffee": "^2.3.1",
+    "gulp-requirejs": "^0.1.3"
+  }
+```
