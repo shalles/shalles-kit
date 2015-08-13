@@ -1,4 +1,13 @@
-# Demo-Template
+# Shalles Product Build Assistant
+
+**基于gulp项目开发与构建助手**
+
+- 自动加并更新版本号（@VERSION）
+- 支持coffee
+- 支持scss
+- 支持图片压缩、样式和脚本代码压缩
+- livereload监听（当代码有更改时自动刷新浏览器）
+- 上传服务器功能还在探索  需要你的支持
 
 ```js
 //Debug 版本号为@dev 代码无压缩 非Debug 版本号为@时间戳 代码压缩
