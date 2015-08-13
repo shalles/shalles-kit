@@ -1,10 +1,10 @@
 /**
  * Created by shalles on 2015/4/17.
  */
-var fs, filepath, encode;
+var fs, path, filepath, encode;
 
 fs = require("fs");
-
+path = require('path');
 
 //console.log(process.argv[2]);
 
@@ -19,7 +19,9 @@ function convertMDtoWikiMultiFile(filepath, convertRule, encode){
     content = convertMDtoWikiMulti(content, convertRule);
     content += "\n {tip}convert markdown to wiki by shalles kit{tip}";
 
-    fs.writeFileSync(filepath, content, encode);
+    var fileInfo = path.parse(filepath),
+        outfile = fileInfo.dir.slice(0, -2) + "/wiki/" + fileInfo.name + ".wk";
+    fs.writeFileSync(outfile, content, encode);
 }
 function convertMDtoWikiMulti(content, convertRule){
     for(var i = 0, len = convertRule.length; i < len; i++){
@@ -41,6 +43,11 @@ var convertRule = [
             }
             return "{code}";
         }
+    },{ // 标题前的a标签
+        reg: /(^|\n)(#+)<a.+<\/a>/g,
+        rep: function($0, $1, $2, $3){
+            return $1 + $2;
+        }
     },{ // 标题
         reg: /(^|\n)(#+)/g,
         rep: function($0, $1, $2){
@@ -56,14 +63,23 @@ var convertRule = [
         rep: function($0, $1, $2, $3){
             return $1 + "{quote}" + $2 + "{quote}" + $3;
         }
+    },{ // 图片
+        reg: /(^|\n)!\[[\u4e00-\u9fa5 \w]+\]\(\{\{ BASE_PATH \}\}(.+)\)(^|\n)/g,
+        rep: function($0, $1, $2, $3){
+            return $1 + "!http://shalles.github.io/blog" + $2 + "!" + $3;
+        }
     }
+    //(#+)<a.+a>
     //,{
     //  在此增加转换匹配规则
     // }
 ];
 filepath = process.argv[2];
-filepath = isAbsolutePath(filepath) ? filepath : __dirname + "\\" + process.argv[2];
-encode = process.argv[3] || "utf-8";
+var files = [];
+if(!filepath){
 
+}
+filepath = isAbsolutePath(filepath) ? filepath : __dirname + "/" + filepath;
+encode = process.argv[3] || "utf-8";
 convertMDtoWikiMultiFile(filepath, convertRule, encode);
 //console.log(content);
