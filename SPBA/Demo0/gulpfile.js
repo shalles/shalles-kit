@@ -6,24 +6,22 @@
 
 'use strict';
 
-/*==默认配置========================================================================*/
+/*==配置========================================================================*/
 
-var DEBUG = false, //Debug 版本号为@dev 代码无压缩 非Debug 版本号为@时间戳 代码压缩
+var DEBUG = true, //Debug 版本号为@dev 代码无压缩 非Debug 版本号为@时间戳 代码压缩
 
     config = {
-        version: !DEBUG,
         // 此功能需要安装chrome插件 https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei
-        livereload: true,//DEBUG,
-        minify: !DEBUG,
+        livereload: true, 
+
         // 本地导出目录
         exports: 'src/export',
-        tmp: 'src/tmp',
+
         // 需要上传到服务器的时候启用 且值为远程服务器地址
         // remote: '/Users/shalles/Workspace/Demo/Map/src/remote',
 
         // 视图页面的目录和导出目录
         views: {
-            jade: false,
             src: 'src/views/**/*',
             exp: 'src/export/pages'
         },
@@ -49,19 +47,16 @@ var DEBUG = false, //Debug 版本号为@dev 代码无压缩 非Debug 版本号�
 var gulp = require('gulp'),
     compass = require('gulp-compass'),
     coffee = require('gulp-coffee'),
-    //concat = require('gulp-concat'),
+    concat = require('gulp-concat'),
     uglify = require('gulp-uglify'),
     imagemin = require('gulp-imagemin'),
     sourcemaps = require('gulp-sourcemaps'),
     minifyCSS = require('gulp-minify-css'),
-    jade = require('gulp-jade'),
-    //replace = require('gulp-replace'),
+    replace = require('gulp-replace'),
     Rsync = require('rsync'),
     rsync = require('gulp-rsync'),
     exec = require('child_process').exec,
     livereload = require('gulp-livereload'),
-    rev = require('gulp-rev'),
-    revreplace = require('gulp-rev-replace'),
     del = require('del');
 
 var dep = [],
@@ -69,9 +64,7 @@ var dep = [],
     ENVIRONMENT = '@' + (DEBUG ? 'dev' : VERSION);
 
 // 编译Sass ['clean'],
-config.styles && 
-dep.push('styles') && 
-gulp.task('styles', function() {
+config.styles && dep.push('compass') && gulp.task('compass', function() {
     // del([config.styles.exp]);
     var data = config.styles.scss ? 
                 gulp.src(config.styles.src + '/*.scss')
@@ -82,28 +75,24 @@ gulp.task('styles', function() {
                         style: 'expanded' //:nested, :expanded, :compact, or :compressed
                     }))
                     .on('error', function(error) {
+                        // Would like to catch the error here 
                         console.log(error);
                         //this.emit('end');
                     }) :
                 gulp.src(config.styles.src + '/*.css');
     
-    config.minify && (data = data.pipe(minifyCSS()));
+    DEBUG || (data = data.pipe(minifyCSS()));
+
+    data
+        .pipe(concat('app' + ENVIRONMENT + '.css'))
+        .pipe(gulp.dest(config.styles.exp));
 
     config.livereload && data.pipe(livereload());
-
-    config.version ? 
-        data.pipe(rev())
-            .pipe(gulp.dest(config.styles.exp))
-            .pipe(rev.manifest('css-map.json'))
-            .pipe(gulp.dest(config.tmp)) :
-        data.pipe(gulp.dest(config.styles.exp));
 
     console.log('styles')
 });
 
-config.scripts && 
-dep.push('scripts') && 
-gulp.task('scripts', function() {
+config.scripts && dep.push('scripts') && gulp.task('scripts', function() {
     // del([config.scripts.exp]);
     var data = config.scripts.coffee ?
                 gulp.src(config.scripts.src + '/*.coffee')
@@ -117,26 +106,18 @@ gulp.task('scripts', function() {
                 gulp.src(config.scripts.src + '/*.js')
                     .pipe(sourcemaps.init());
             
-    config.minify && (data = data.pipe(uglify()).pipe(sourcemaps.write()));
+    DEBUG || (data = data.pipe(uglify()).pipe(sourcemaps.write()));
+    
+    data.pipe(concat('app'+ ENVIRONMENT +'.js'))
+        .pipe(gulp.dest(config.scripts.exp));
 
     config.livereload && data.pipe(livereload());
 
-    config.version ?
-        data.pipe(rev())
-            .pipe(gulp.dest(config.scripts.exp))
-            .pipe(rev.manifest('js-map.json'))
-            .pipe(gulp.dest(config.tmp)) : 
-        data.pipe(gulp.dest(config.scripts.exp));
-
-    console.log('scripts');
-    //data.pipe(es.map(function(file, done) {
-    //    console.log(file);
-    //}));
+    console.log('scripts')
 });
 
 // Copy all static images
-config.images && dep.push('images') && 
-gulp.task('images', function() {
+config.images && dep.push('images') && gulp.task('images', function() {
     // del([config.images.exp]);
     var data = gulp.src(config.images.src);
 
@@ -146,25 +127,21 @@ gulp.task('images', function() {
 
     config.livereload && data.pipe(livereload());
 
-    console.log('images');
+    console.log('images')
 });
 
-config.views && dep.push('views') && 
-gulp.task('views', function(){
+// gulp.task('version', function(){
+//     ENVIRONMENT = '@' + (DEBUG ? 'dev' : VERSION);
+// });
 
-    var manifest = gulp.src(config.tmp + '/*.json');
+config.views && dep.push('views') && gulp.task('views', function(){
     var data =  gulp.src(config.views.src)
-                    //.pipe(replace('@VERSION', ENVIRONMENT))
-    config.views.jade && (data = data.pipe(jade({client: true})));
-
-    config.version && 
-        (data = data.pipe(revreplace({replaceInExtensions: ['.jade', '.html', '.vm', '.htm'], manifest: manifest})));
-
-    data.pipe(gulp.dest(config.views.exp));
+                    .pipe(replace('@VERSION', ENVIRONMENT))
+                    .pipe(gulp.dest(config.views.exp));
 
     config.livereload && data.pipe(livereload());
 
-    console.log('views');
+    console.log('views')
 });
 
 // 部署或开发时watch变更
@@ -213,14 +190,13 @@ config.remote ?
         livereload.listen();
 
         config.views && gulp.watch(config.views.src, ['views']);
-        config.styles && gulp.watch(config.styles.src + '/*.scss', ['styles']);
-        config.scripts && gulp.watch(config.scripts.src + '/*.coffee', ['scripts']);
+        config.styles && gulp.watch('*/**/*.scss', ['compass']);
+        config.scripts && gulp.watch('*/**/*.coffee', ['scripts']);
         config.images && gulp.watch(config.images.src, ['images']);
-        config.version && gulp.watch(config.tmp + '/*.json', ['views']);
     });
 
 
-del.sync([config.exports]);
+del.sync(config.exports);
 
 var defaultDep = (config.remote ? 'deploy' : 'watch');
 

@@ -1,0 +1,25 @@
+{
+  "name": "Map",
+  "version": "0.0.1",
+  "authors": [
+    "shalles <shalles@163.com>"
+  ],
+  "description": "地图demo",
+  "main": "index.html",
+  "keywords": [
+    "webmap"
+  ],
+  "license": "MIT",
+  "homepage": "index.html",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "requirejs": "~2.1.20"
+  }
+}
